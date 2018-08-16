@@ -29,9 +29,7 @@
 import Vue from 'vue'
 // @ is an alias to /src
 import CardTile from '@/components/CardTile.vue'
-import Card from '@/components/Card.vue'
 
-Vue.component('card', Card);
 Vue.component('card-tile', CardTile);
 
 

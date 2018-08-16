@@ -109,7 +109,7 @@ export default new Vuex.Store({
     user: state => state.user,
     bank: state => state.bank,
     cards: state => state.cards,
-    documents: state => state.documents,]
+    documents: state => state.documents,
     transactions: state => state.transactions
   }
 })
