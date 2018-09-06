@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import getItem from './services/storage-service'
+import transactionTypeService from './services/transactionType-service'
 import blockchainService from './services/blockchain-service';
 
 Vue.use(Vuex)
@@ -21,16 +22,17 @@ export default new Vuex.Store({
         if(!state.transactions || !state.transactions.length){
           state.transactions = [];
         }
+        transaction.transactionTypeText = transactionTypeService(transaction.transactionType)
         state.transactions.push(transaction);
         localStorage.setItem('transactions', JSON.stringify(state.transactions))
       }
     },
     async setTransactions(state, transactions){
-      var result = await blockchainService.getAllBankTransactions();
-      if(result !== 'error'){
-        state.transactions = result;
-        localStorage.setItem('transactions', JSON.stringify(state.transactions))
+      state.transactions = transactions;
+      for(var txn of state.transactions){
+        txn.transactionTypeText = transactionTypeService(txn.transactionType)
       }
+      localStorage.setItem('transactions', JSON.stringify(state.transactions))
     },
     setBank(state, bank){
       state.bank = bank;
@@ -100,6 +102,12 @@ export default new Vuex.Store({
     },
     async queryTransactionByOrgName(state, orgName){
       var response = await blockchainService.queryBankTransactionByOrgName(orgName);
+      if(response.length > 0){
+        state.commit('setTransactions', response);
+      }
+    },
+    async queryAllTransactions(state){
+      var response = await blockchainService.getAllBankTransactions();
       if(response.length > 0){
         state.commit('setTransactions', response);
       }

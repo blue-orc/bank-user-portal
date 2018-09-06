@@ -4,16 +4,34 @@
             :src="src"
             height="1600px"
         ></v-card-media>
-        <v-card-actions>
-            <v-btn flat @click="sign()">Sign</v-btn>
-            <v-btn flat @click="cancel()">cancel</v-btn>
+        <v-card-text>
+            Please sign
+        </v-card-text>
+        <v-card flat class="pt-1 pb-2 px-3 blue lighten-5" width="800" height="75">
+            <VueSignaturePad
+                ref="signaturePad"
+                :customStyle="customStyle"
+            />
+        </v-card>
+        <v-card-actions class="pt-3">
+            <v-btn flat @click="save()">Save</v-btn>
+            <v-btn flat @click="undo()">Undo</v-btn>
         </v-card-actions>
     </v-card>
 </template>
 <script>
+import Vue from 'vue'
+import VueSignaturePad from 'vue-signature-pad'
+
+Vue.use(VueSignaturePad)
 export default {
     data: () => ({
-        src: require('../assets/creditCardAgreement.jpg')
+        src: require('../assets/creditCardAgreement.jpg'),
+        customStyle: {
+            'border-bottom': '1px solid black'
+            
+        },
+        signatureData:''
     }),
     props:['document'],
     computed:{
@@ -35,7 +53,8 @@ export default {
                 userId: this.user.username,
                 dateCreated: (new Date).getTime(),
                 transactionType: 2,
-                orgName: this.bank.name
+                orgName: this.bank.name,
+                signatureData: this.signatureData
             }
             this.$store.dispatch('addTransaction', transaction);
 
@@ -49,6 +68,21 @@ export default {
         },
         cancel(){
             this.$router.push('/documents')
+        },
+        undo() {
+            this.$refs.signaturePad.undoSignature();
+        },
+        save() {
+            const { isEmpty, data } = this.$refs.signaturePad.saveSignature();
+
+            if(isEmpty){
+                alert('Please sign the document before saving!')
+                return
+            }
+
+            this.signatureData = data;
+
+            this.sign();
         }
     }
 }

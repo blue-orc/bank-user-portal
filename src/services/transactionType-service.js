@@ -1,5 +1,4 @@
 export default function convertTransactionType(key) {
-    console.log(key);
     switch (key){
         case 0:
             return 'Card Requested by User'
