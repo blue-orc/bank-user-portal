@@ -22,6 +22,10 @@ var blockchainErrorsToConsole = function(response){
 
 export default {
     async insertBankTransaction(transaction) {
+        transaction.orgName = transaction.orgName.toLowerCase();
+        if(!transaction.signatureData){
+            transaction.signatureData = '';
+        }
         var uri = baseUri;
         var milliseconds = (new Date).getTime();       
         var body = {
@@ -36,9 +40,10 @@ export default {
                 transaction.orgName, 
                 transaction.transactionType, 
                 transaction.userId, 
-                milliseconds.toString()
+                milliseconds.toString(),
+                transaction.signatureData
             ],
-            chaincodeVer: "v4"
+            chaincodeVer: "v7"
         }
 
         try {
@@ -47,7 +52,7 @@ export default {
                 blockchainErrorsToConsole(response);
             }
             console.log(response.data)
-            return response.data;
+            return transaction;
         } catch (error) {
             console.log(error);
             return 'error';
@@ -84,7 +89,7 @@ export default {
             chaincode: "bankTransaction",
             method: "getBankTransactionByRange",
             args: [milliseconds.toString()],
-            chaincodeVer: "v4"
+            chaincodeVer: "v7"
         }
 
         try {
@@ -93,9 +98,10 @@ export default {
                 blockchainErrorsToConsole(response);
             }
             var payload = response.data.result.payload;
-            var transactions = [];
-            for(var i = 0; i < payload.length; i++){
-                transactions.add(payload[i].record);
+            var results = JSON.parse(payload);
+            var transactions = []
+            for(var result of results){
+                transactions.push(result.Record);
             }
             console.log(transactions);
             return transactions;

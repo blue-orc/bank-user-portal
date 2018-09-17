@@ -8,9 +8,12 @@
         <v-btn flat @click="navigate('profile')">
           <span>{{user.username}}</span>&nbsp;&nbsp;&nbsp;&nbsp;<v-icon>fas fa-user</v-icon>
         </v-btn>
+        <v-btn flat @click="toggleBlockchain()">
+          <v-icon>fas fa-cloud</v-icon>
+        </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <v-flex v-if="user.username">
+    <v-flex grow v-if="user.username">
       <v-navigation-drawer
         v-model="drawer"
         fixed 
@@ -28,18 +31,21 @@
           </v-list-tile>
         </v-list>
       </v-navigation-drawer>
-      <v-content>
-        <v-container fluid fill-height fill-width>
-          <v-layout
-            justify-center
-            align-center
-          >
-            <v-flex grow>
-              <router-view/>
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-content>
+          <v-container fluid align-start>
+            <v-content>
+              <v-layout
+                justify-center
+                fill-height
+              >
+                <v-flex grow>
+                  <router-view/>
+                </v-flex>
+                <v-flex fill-height xs6 v-if="viewBlockchain">
+                  <blockchain/>
+                </v-flex>
+              </v-layout>
+            </v-content>
+          </v-container>
     </v-flex>
     <div v-if="!user.username">
       <LoginForm/>
@@ -53,16 +59,22 @@
   import Vue from 'vue'
 
   import LoginForm from './components/LoginForm'
+  import Blockchain from './views/Blockchain'
 
   Vue.component('LoginForm', LoginForm);
+  Vue.component('blockchain', Blockchain);
 
   export default {
     data: () => ({
-      drawer: null
+      drawer: null,
+      viewBlockchain: false
     }),
     methods:{
       navigate(path){
         this.$router.push(path);
+      },
+      toggleBlockchain(){
+        this.viewBlockchain = !this.viewBlockchain;
       }
     },
     computed: {
@@ -76,9 +88,7 @@
         return [
           { title: 'Home', icon: 'home', path: '/'},
           { title: 'Credit Card', icon: 'far fa-credit-card', path: '/cards', outstanding: this.oustandingCards },
-          //{ title: 'Loan', icon: 'fas fa-hand-holding-usd', path: '/loans'},
-          { title: 'Documents', icon: 'fas fa-file-signature', path: '/documents', outstanding: this.oustandingDocuments},
-          //{ title: 'History', icon: 'fas fa-history', path: '/history'}
+          { title: 'Documents', icon: 'fas fa-file-signature', path: '/documents', outstanding: this.oustandingDocuments}
         ]
       },
       user: function (){
@@ -108,6 +118,7 @@
         name: 'Bank of Oracle'
       }
       this.$store.dispatch('initBank', bank);
+      this.$store.dispatch('queryAllTransactions');
     },
     props: {
       source: String
